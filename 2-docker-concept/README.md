@@ -2,13 +2,13 @@
 
 ## 2.1. Show running containers
 
-* Step 1 Run docker ps to show running containers:
+* Step 1 : Run docker ps to show running containers:
 
 ```{r, engine='bash', count_lines}
 $ docker ps
 CONTAINER ID IMAGE       COMMAND  CREATED        STATUS                     PORTS NAMES
 ```
-* Step 2 The output shows that there are no running containers at the moment. Use the command docker ps -a to list all containers:
+* Step 2 : The output shows that there are no running containers at the moment. Use the command docker ps -a to list all containers:
 
 ```{r, engine='bash', count_lines}
 docker ps -a
@@ -19,7 +19,7 @@ CONTAINER ID IMAGE       COMMAND  CREATED        STATUS                     PORT
 
 In the previous section we started two containers and the command docker ps -a shows that both of them are exited. Note that Docker has generated random names for the containers (the last column). In your case, these names can be different.
 
-* Step 3 Let’s run the command docker images to show all the images on your local system:
+* Step 3 : Let’s run the command docker images to show all the images on your local system:
 
 ```{r, engine='bash', count_lines}
 $ docker images
@@ -30,7 +30,7 @@ As you see, there is only one image that was downloaded from the Docker Hub.
 
 ## 2.3. Specify a container main process
 
-* Step 1 Let’s run our own “hello world” container. We will use the existing Ubuntu image for that:
+* Step 1 : Let’s run our own “hello world” container. We will use the existing Ubuntu image for that:
 
 ```{r, engine='bash', count_lines}
 $ docker run ubuntu /bin/echo 'Hello world'
@@ -43,7 +43,7 @@ Hello world
 
 As you see, Docker downloaded the image ubuntu because it was not on the local machine.
 
-* Step 2 Let’s run the command docker images again:
+* Step 2 : Let’s run the command docker images again:
 
 ```{r, engine='bash', count_lines}
 $ docker images
@@ -51,8 +51,9 @@ REPOSITORY          TAG                 IMAGE ID            CREATED             
 ubuntu              latest              42118e3df429        11 days ago         124.8 MB
 hello-world         latest              c54a2cc56cbb        4 weeks ago         1.848 kB
 ```
+You can see that the images is now on your local host.
 
-* Step 3 If you run the same “hello world” container again, Docker will use a local copy of the image:
+* Step 3 : If you run the same “hello world” container again, Docker will use a local copy of the image:
 
 ```{r, engine='bash', count_lines}
 $ docker run ubuntu /bin/echo 'Hello world'
@@ -302,10 +303,189 @@ $ docker restart webapp
 $ curl http://localhost/
 Hello world!!!
 ```
+##2.11. Restart a container
 
-## 2.11. Connect a container to a network
+* Step 1 Let’s stop the container with web application:
+```{r, engine='bash', count_lines}
+$ docker stop webapp
+```
+The main process inside the container will receive SIGTERM, and after a grace period, SIGKILL.
 
-* Step 1 Start a database container:
+* Step 2 You can start the container later using the docker start command:
+
+```{r, engine='bash', count_lines}
+$ docker start webapp
+```
+
+* Step 3 Check that the web application works:
+
+```{r, engine='bash', count_lines}
+$ curl http://localhost/
+Hello world!
+Step 4 You also can restart the running container using the docker restart command. The -t command line argument specifies a number of seconds to wait for stop before killing the container:
+
+```{r, engine='bash', count_lines}
+$ docker restart webapp
+```
+
+## 2.12. Remove a container
+
+* Step 1 You can remove the existing container. You should stop the container before removing it. Alternatively you can use the -f command line argument:
+
+```{r, engine='bash', count_lines}
+$ docker rm -f webapp
+```
+
+## 2.13. Use a Data Volume
+
+* Step 1 Add a data volume to a container:
+
+```{r, engine='bash', count_lines}
+$ docker run -d -P --name webapp -v /webapp training/webapp python app.py
+```
+This command started a new container and created a new volume inside the container at /webapp.
+
+TODO: add explaination
+
+* Step 2 Locate the volume on the host using the docker inspect command:
+
+```{r, engine='bash', count_lines}
+$ docker inspect webapp
+...
+    "Mounts": [
+        {
+            "Name": "7d72348e8f...",
+            "Source": "/var/lib/docker/volumes/7d72348e8f.../_data",
+            "Destination": "/webapp",
+            "Driver": "local",
+            "Mode": "",
+            "RW": true,
+            "Propagation": ""
+        }
+    ],
+...
+```
+
+Alternatively, you can specify a host directory you want to use as a data volume:
+
+```{r, engine='bash', count_lines}
+$ mkdir db
+$ docker run -d --name db -v $HOME/db:/db training/postgres
+```
+TODO: Add explaination src_dir:dst_dir
+
+* Step 3 Start an interactive session in the db container and create a new file in the /db directory:
+
+```{r, engine='bash', count_lines}
+$ docker exec -it db bash
+root@9a7a4fbcc929:/# cd /db
+root@9a7a4fbcc929:/db# touch hello_from_db_container
+root@9a7a4fbcc929:/db# exit
+```
+* Step 4 Check that the local db directory contains the new file:
+
+```{r, engine='bash', count_lines}
+$ ls db
+hello_from_db_container
+``
+Step 5 Check that the data volume is persistent. Remove the db container:
+```{r, engine='bash', count_lines}
+$ docker rm -f db
+```
+* Step 6 Create the db container again:
+
+```{r, engine='bash', count_lines}
+$ docker run -d --name db -v /home/stack/db:/db training/postgres
+```
+
+* Step 7 Check that its /db directory contains the hello_from_db_container file:
+
+```{r, engine='bash', count_lines}
+$ docker exec -it db bash
+root@47a60c01590e:/# ls /db
+hello_from_db_container
+root@47a60c01590e:/# exit
+```
+## 2.14. Use a Data Volume Container
+* Step 1 Let’s create a new named container with a volume to share:
+
+```{r, engine='bash', count_lines}
+$ docker create -v /dbdata --name dbstore training/postgres /bin/true
+```
+This container does not run an application and reuses the training/postgres image.
+
+* Step 2 Use the --volumes-from flag to mount the /dbdata volume in another containers:
+
+```{r, engine='bash', count_lines}
+$ docker run -d --volumes-from dbstore --name db1 training/postgres
+$ docker run -d --volumes-from dbstore --name db2 training/postgres
+```
+TODO:
+
+```
+helos-MBP:~ Thelo$ docker run -d --volumes-from dbstore --name db1 training/postgres
+8eccc3531c0af12b8c2948ad48711b71f4c8845417a83423976306b0ef921028
+Thelos-MBP:~ Thelo$ docker run -d --volumes-from dbstore --name db2 training/postgres
+6066746c4da989672fc560ee6f1c711e738f922cd658bd166ea76b0a6d25db45
+Thelos-MBP:~ Thelo$ docker exec -it db1 bash
+root@8eccc3531c0a:/# ls /
+bin   dbdata  etc   lib    media  opt    root  sbin  sys  usr
+boot  dev     home  lib64  mnt      proc    run   srv   tmp  var
+root@8eccc3531c0a:/# mount | grep dbdata
+/dev/sda2 on /dbdata type ext4 (rw,relatime,data=ordered)
+root@8eccc3531c0a:/# cd dbdata/
+root@8eccc3531c0a:/dbdata#
+```
+
+## 2.15. Link containers
+* Step 1 You should have the db and webapp containers running. Remove the webapp container:
+
+```{r, engine='bash', count_lines}
+$ docker rm -f webapp
+```
+
+* Step 2 Create a new webapp container and link it with your db container:
+
+```{r, engine='bash', count_lines}
+$ docker run -d -P --name webapp --link db:db training/webapp python app.py
+```
+TODO: explain -P option plus where everything comes from...
+
+* Step 3 Inspect your linked containers with docker inspect:
+
+```{r, engine='bash', count_lines}
+$ docker inspect -f "{{ .HostConfig.Links }}" webapp
+[/db:/webapp/db]
+```
+You see that the webapp container is now linked to the db container. This allows it to access information about the db container.
+
+* Step 4 Start an interactive session in the webapp container and check its /etc/hosts file and its environment variables:
+
+```{r, engine='bash', count_lines}
+$ docker exec -it webapp bash
+root@90eb1de6fa8a:/opt/webapp# env | grep DB
+DB_NAME=/webapp/db
+DB_PORT_5432_TCP_ADDR=172.17.0.3
+DB_PORT=tcp://172.17.0.3:5432
+DB_PORT_5432_TCP=tcp://172.17.0.3:5432
+DB_PORT_5432_TCP_PORT=5432
+DB_PORT_5432_TCP_PROTO=tcp
+DB_ENV_PG_VERSION=9.3
+root@90eb1de6fa8a:/opt/webapp# cat /etc/hosts
+...
+172.17.0.3  db 47a60c01590e
+172.17.0.2  90eb1de6fa8a
+root@90eb1de6fa8a:/opt/webapp# exit
+```
+
+You see that Docker updated the /etc/hosts file and set the environment variables. This information can be used in the webapp container to access the database.
+
+
+## 2.16. Connect a container to a network
+
+This section is optional, you can complete the rest of the workshop first then come back to this part.
+
+* Step 1 Start a database container ( here we will use postgresql):
 
 ```{r, engine='bash', count_lines}
 $ docker run -d --name db training/postgres
@@ -518,163 +698,6 @@ PING 172.19.0.3 (172.19.0.3) 56(84) bytes of data.
 rtt min/avg/max/mdev = 0.136/0.136/0.136/0.000 ms
 ```
 
-##2.12. Restart a container
-
-* Step 1 Let’s stop the container with web application:
-```{r, engine='bash', count_lines}
-$ docker stop webapp
-```
-The main process inside the container will receive SIGTERM, and after a grace period, SIGKILL.
-
-* Step 2 You can start the container later using the docker start command:
-
-```{r, engine='bash', count_lines}
-$ docker start webapp
-```
-
-* Step 3 Check that the web application works:
-
-```{r, engine='bash', count_lines}
-$ curl http://localhost/
-Hello world!
-Step 4 You also can restart the running container using the docker restart command. The -t command line argument specifies a number of seconds to wait for stop before killing the container:
-
-```{r, engine='bash', count_lines}
-$ docker restart webapp
-```
-
-## 2.13. Remove a container
-
-* Step 1 You can remove the existing container. You should stop the container before removing it. Alternatively you can use the -f command line argument:
-
-```{r, engine='bash', count_lines}
-$ docker rm -f webapp
-$ docker rm -f db
-```
-
-## 2.14. Use a Data Volume
-
-* Step 1 Add a data volume to a container:
-
-```{r, engine='bash', count_lines}
-$ docker run -d -P --name webapp -v /webapp training/webapp python app.py
-```
-This command started a new container and created a new volume inside the container at /webapp.
-
-* Step 2 Locate the volume on the host using the docker inspect command:
-
-```{r, engine='bash', count_lines}
-$ docker inspect webapp
-...
-    "Mounts": [
-        {
-            "Name": "7d72348e8f...",
-            "Source": "/var/lib/docker/volumes/7d72348e8f.../_data",
-            "Destination": "/webapp",
-            "Driver": "local",
-            "Mode": "",
-            "RW": true,
-            "Propagation": ""
-        }
-    ],
-...
-```
-
-Alternatively, you can specify a host directory you want to use as a data volume:
-
-```{r, engine='bash', count_lines}
-$ mkdir db
-$ docker run -d --name db -v /home/stack/db:/db training/postgres
-```
-
-* Step 3 Start an interactive session in the db container and create a new file in the /db directory:
-
-```{r, engine='bash', count_lines}
-$ docker exec -it db bash
-root@9a7a4fbcc929:/# cd /db
-root@9a7a4fbcc929:/db# touch hello_from_db_container
-root@9a7a4fbcc929:/db# exit
-```
-* Step 4 Check that the local db directory contains the new file:
-
-```{r, engine='bash', count_lines}
-$ ls db
-hello_from_db_container
-``
-Step 5 Check that the data volume is persistent. Remove the db container:
-```{r, engine='bash', count_lines}
-$ docker rm -f db
-```
-* Step 6 Create the db container again:
-
-```{r, engine='bash', count_lines}
-$ docker run -d --name db -v /home/stack/db:/db training/postgres
-```
-
-* Step 7 Check that its /db directory contains the hello_from_db_container file:
-
-```{r, engine='bash', count_lines}
-$ docker exec -it db bash
-root@47a60c01590e:/# ls /db
-hello_from_db_container
-root@47a60c01590e:/# exit
-```
-## 2.15. Use a Data Volume Container
-* Step 1 Let’s create a new named container with a volume to share:
-
-```{r, engine='bash', count_lines}
-$ docker create -v /dbdata --name dbstore training/postgres /bin/true
-```
-This container does not run an application and reuses the training/postgres image.
-
-* Step 2 Use the --volumes-from flag to mount the /dbdata volume in another containers:
-
-```{r, engine='bash', count_lines}
-$ docker run -d --volumes-from dbstore --name db1 training/postgres
-$ docker run -d --volumes-from dbstore --name db2 training/postgres
-```
-
-## 2.16. Link containers
-* Step 1 You should have the db and webapp containers running. Remove the webapp container:
-
-```{r, engine='bash', count_lines}
-$ docker rm -f webapp
-```
-
-* Step 2 Create a new webapp container and link it with your db container:
-
-```{r, engine='bash', count_lines}
-$ docker run -d -P --name webapp --link db:db training/webapp python app.py
-```
-
-* Step 3 Inspect your linked containers with docker inspect:
-
-```{r, engine='bash', count_lines}
-$ docker inspect -f "{{ .HostConfig.Links }}" webapp
-[/db:/webapp/db]
-```
-You see that the webapp container is now linked to the db container. This allows it to access information about the db container.
-
-* Step 4 Start an interactive session in the webapp container and check its /etc/hosts file and its environment variables:
-
-```{r, engine='bash', count_lines}
-$ docker exec -it webapp bash
-root@90eb1de6fa8a:/opt/webapp# env | grep DB
-DB_NAME=/webapp/db
-DB_PORT_5432_TCP_ADDR=172.17.0.3
-DB_PORT=tcp://172.17.0.3:5432
-DB_PORT_5432_TCP=tcp://172.17.0.3:5432
-DB_PORT_5432_TCP_PORT=5432
-DB_PORT_5432_TCP_PROTO=tcp
-DB_ENV_PG_VERSION=9.3
-root@90eb1de6fa8a:/opt/webapp# cat /etc/hosts
-...
-172.17.0.3  db 47a60c01590e
-172.17.0.2  90eb1de6fa8a
-root@90eb1de6fa8a:/opt/webapp# exit
-```
-
-You see that Docker updated the /etc/hosts file and set the environment variables. This information can be used in the webapp container to access the database.
 
 # Checkpoint
 * Install Docker
@@ -686,9 +709,9 @@ You see that Docker updated the /etc/hosts file and set the environment variable
 * Expose container ports
 * Execute a process in a container
 * Copy files to/from container
-* Connect a container to a network
 * Use a data volume
 * Use a data volume container
 * Link containers
 * Stop a container
 * Remove a container
+* [Optional] Connect a container to a network
