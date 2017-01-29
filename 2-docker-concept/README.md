@@ -43,6 +43,18 @@ Hello world
 
 As you see, Docker downloaded the image ubuntu because it was not on the local machine.
 
+### Questions:
+
+* Was the ubuntu image on the local machine
+ <details>
+<summary><b>Click here to see the solutions</b></summary>
+
+
+* Was the ubuntu image on the local machine ?
+If you haven't use Docker before the ubuntu image should not be on the local machine, hence docker will pull out the image from the docker repository and save a copy locally. The next time you want to create a container from the Ubuntu image, Docker will use the local copy. 
+</details>
+
+
 * Step 2 : Let’s run the command docker images again:
 
 ```{r, engine='bash', count_lines}
