@@ -1,16 +1,11 @@
 # 3. Docker Images
 In this lab, we will write a Dockerfile and build a new Docker image.
 
-Chapter Details
-Chapter Goal	Learn how to write Dockerfile and build Docker image
-Chapter Sections	
-3.1. Build a Docker image
-3.2. Build a multi-container application
-3.1. Build a Docker image
-In the previous section (2. Docker Concepts), we learned how to use Docker images to run Docker containers. Docker images that we used have been downloaded from the Docker Hub, a registry of Docker images. In this section we will create a simple web application from scratch. We will use Flask (http://flask.pocoo.org/), a microframework for Python. Our application for each request will display a random picture from the defined set.
+In the previous section (2. Docker Concepts), we learned how to use Docker images to run Docker containers. Docker images that we used have been downloaded from the Docker Hub, a registry of Docker images. 
 
-In the next session we will create all necessary files for our application. The code for this application is also available in GitHub:
-https://github.com/docker/labs/tree/master/beginner/flask-app
+In this section we will create a simple web application from scratch. We will use Flask (http://flask.pocoo.org/), a microframework for Python. Our application for each request will display a random picture from the defined set.
+
+In the next session we will create all necessary files for our application. The code for this application is also available in this directory.
 
 ## 3.1.1. Create project files
 
@@ -62,12 +57,15 @@ def index():
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
 ```
+
+> This code will simply create a rest API returning a web page with a random cat GIF.
     
 * Step 4 Create a new file requirements.txt with the following line:
 
 ```{r, engine='bash', count_lines}
 Flask==0.10.1
 ```
+> In python dependencies can be all listed in a requirement file. Here we just need Flask.
 
 * Step 5 Create a new directory templates and create a new file index.html in this directory with the following content:
 
@@ -99,6 +97,7 @@ Flask==0.10.1
   </body>
 </html>
 ```
+> This is the html template that will host our amazing GIF.
 
 * Step 6 Create a new file Dockerfile:
 
@@ -126,6 +125,7 @@ EXPOSE 5000
 # run the application
 CMD ["python", "/usr/src/app/app.py"]
 ```
+> Here we start from an existing image ( alpine:3.5) then add some extra steps because we need it for our application.
 
 ## 3.1.2. Build a Docker image
 * Step 1 Now we can build our Docker image. In the command below, replace <user-name> with your user name. For a real image, the user name should be the same as you created when you registered on Docker Hub. Because we will not publish our image, you can use any valid name:
@@ -162,4 +162,6 @@ myfirstapp
 $ docker rm myfirstapp
 myfirstapp
 ```
+
+Having a container is good, but having an army of container working together is much better, to see how to run multi-containers application check this page [Part 4 : Run a multi-containers application](../4-multi-container-application/).
 

@@ -492,6 +492,7 @@ root@90eb1de6fa8a:/opt/webapp# exit
 
 You see that Docker updated the /etc/hosts file and set the environment variables. This information can be used in the webapp container to access the database.
 
+Now that we know the basic commands, let's build our own image, [Part 3 : Build your own Docker image](../3-docker-images/).
 
 # Checkpoint
 * Install Docker
