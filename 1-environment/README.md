@@ -1,6 +1,13 @@
 # 1. Environment
 
-## 1.1. Install Docker
+See below what fit your need the best based on your OS:
+
+- 1.1 Install Docker on Linux
+- 1.2 Install Docker on OS X
+- 1.3 Do not install Docker and use one of our VM.
+
+
+## 1.1. Install Docker On Linux
 * Step 1 We will install Docker from Docker’s APT repository. For the first step, we will install HTTPS transport for Apt:
 
 ```{r, engine='bash', count_lines}
@@ -82,3 +89,19 @@ Hello from Docker!
 This message shows that your installation appears to be working correctly.
 ...
 ```
+
+## 1.2. Install Docker on OS X
+
+You can find the installation steps at : https://docs.docker.com/docker-for-mac/
+
+You do not need to run the thousands of example proposed by the docker documentation at the moment.
+
+## 1.3. 1.3 Do not install Docker and use one of our VM.
+
+
+TODO
+
+
+
+Now let's get some hands on what Docker can actually do, [Part 2 : Docker concept](../2-docker-concept/).
+
