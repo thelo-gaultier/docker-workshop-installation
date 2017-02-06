@@ -91,38 +91,34 @@ fd0740ee1525 redis:alpine            "docker-entrypoint.sh" 2 minutes ago Up 2 m
 
 Take a look at the docker-compose file and try to answer the following questions:
 
-* What are the different parts of the docker-compose file?
+#### What are the different parts of the docker-compose file?
+
 <details>
 <summary><b>Click here for the answer</b></summary>
-
-### What are the different parts of the docker-compose file?
 
 In this file, we can see three different information
 1. Version : ( here 3) Indicates to docker-compose the version of the docker-file ( along the different docker-compose the syntax evolved a little bit).
 2. Services : List and specification of the different container to start.
 3. Volumes : List and specification of the docker volume that may be used by the containers.
-
 </details>
 
 
-* Where do the images of the container without the "images" come from?
+#### Where do the images of the container without the "images" come from?
+
 <details>
 <summary><b>Click here for the answer</b></summary>
-
-### Where do the images of the container without the "images" come from?
 
 These "image-less" containers have the image field replace with the field "build", which indicates the location of the 
 container Dockerfile.
 </details>
 
-### How does the voting-app knows the cache information ( redis ) to save the vote result?
+#### How does the voting-app knows the cache information ( redis ) to save the vote result?
+
+> Hint: Feel free to check the file ./vote/app.py
 
 <details>
 <summary><b>Click here for the answer</b></summary>
 
-### How does the voting-app knows the cache information ( redis ) to save the vote result?
-
-> Hint: Feel free to check the file ./vote/app.py
 
 Here the redis information are semi hard-coded in the code. The voting-app point to the "redis" domain name. Since the redis container
 is linked to the voting-app container, the "redis" domain name will be automatically translated to the redis ip.
@@ -131,7 +127,7 @@ is linked to the voting-app container, the "redis" domain name will be automatic
 def get_redis():
     if not hasattr(g, 'redis'):
         g.redis = Redis(host="redis", db=0, socket_timeout=5)
-ß    return g.redis
+git s    return g.redis
 ```
 
 </details>
