@@ -12,25 +12,28 @@ Cloning into 'example-voting-app'...
 $ cd example-voting-app
 ```
 
-* Step 2 Edit the vote/app.py file, change the following lines near the top of the file:
+* Step 2 Edit the vote/app.py file, change the following lines near the top of the file with something far better:
 
 ```{r, engine='bash', count_lines}
 option_a = os.getenv('OPTION_A', "Cats")
 option_b = os.getenv('OPTION_B', "Dogs")
-Step 3 Replace “Cats” and “Dogs” with two options of your choice. For example:
+```
+* Step 3 Replace “Cats” and “Dogs”  with two options of your choice. For example:
 
-option_a = os.getenv('OPTION_A', "Java")
-option_b = os.getenv('OPTION_B', "Python")
+```{r, engine='bash', count_lines}
+option_a = os.getenv('OPTION_A', "Kitten")
+option_b = os.getenv('OPTION_B', "Puppy")
 ```
 
 * Step 4 The existing file docker-compose.yml defines several images:
 
-A voting-app container based on a Python image
-A result-app container based on a Node.js image
-A Redis container based on a redis image, to temporarily store the data.
-A worker app based on a dotnet image
-A Postgres container based on a postgres image
-Note that three of the containers are built from Dockerfiles, while the other two are images on Docker Hub.
+1. A voting-app container based on a Python image
+2. A result-app container based on a Node.js image
+3. A Redis container based on a redis image, to temporarily store the data. ( Key - Value cache software)
+4. A worker app based on a dotnet image
+5. A Postgres container based on a postgres image ( Database)
+
+Note that three of the containers are built from Dockerfiles, while the other two are images on Docker Hub ( Redis and Postgres).
 
 * Step 5 Let’s change the default port to expose. Edit the docker-compose.yml file and find the following lines:
 
@@ -39,7 +42,8 @@ Note that three of the containers are built from Dockerfiles, while the other tw
 ports:
   - "5000:80"
 ...
-Change 5000 to 80:
+
+# Change 5000 to 80:
 
 ...
 ports:
@@ -47,7 +51,7 @@ ports:
 ...
 ```
 
-* Step 6 Install the docker-compose tool:
+* Step 6 Install the docker-compose tool ( if not already installed):
 
 ```{r, engine='bash', count_lines}
 $ curl -Lo docker-compose \
@@ -58,9 +62,14 @@ https://github.com/docker/compose/releases/download/1.8.0/docker-compose-Linux-x
 
 * Step 7 Use the docker-compose tool to launch your application:
 
+> Docker-compose is a tool allowing you to define and run multi/container application.
+> The set of container is defined inside the docker-compose.yml file
+
 ```{r, engine='bash', count_lines}
 $ docker-compose up -d
 ```
+
+This command will run all the containers defined in the docker-compose.yml file.
 
 * Step 8 Check that all containers are running:
 
@@ -73,7 +82,66 @@ fd0740ee1525 redis:alpine            "docker-entrypoint.sh" 2 minutes ago Up 2 m
 52ef44aa1b97 examplevotingapp_vote   "python app.py"        2 minutes ago Up About a minute 0.0.0.0:80->80/tcp                             examplevotingapp_vote_1
 ```
 
-Step 9 Use your browser to open the address http://<lab IP> and check that the application works. Then stop the application:
+* Step 9 Use your browser to open the address http://<Host IP> and check that the application works. Then stop the application:
+
+1. To vote check the voting-app web page : http://<Host IP>:80
+2. To see the result, check the result-app webb page : http://<Host IP:5001
+
+* Step 10 : Explore the docker-compose file
+
+Take a look at the docker-compose file and try to answer the following questions:
+
+* What are the different parts of the docker-compose file?
+<details>
+<summary><b>Click here for the answer</b></summary>
+
+### What are the different parts of the docker-compose file?
+
+In this file, we can see three different information
+1. Version : ( here 3) Indicates to docker-compose the version of the docker-file ( along the different docker-compose the syntax evolved a little bit).
+2. Services : List and specification of the different container to start.
+3. Volumes : List and specification of the docker volume that may be used by the containers.
+
+</details>
+
+
+* Where do the images of the container without the "images" come from?
+<details>
+<summary><b>Click here for the answer</b></summary>
+
+### Where do the images of the container without the "images" come from?
+
+These "image-less" containers have the image field replace with the field "build", which indicates the location of the 
+container Dockerfile.
+</details>
+
+### How does the voting-app knows the cache information ( redis ) to save the vote result?
+
+<details>
+<summary><b>Click here for the answer</b></summary>
+
+### How does the voting-app knows the cache information ( redis ) to save the vote result?
+
+> Hint: Feel free to check the file ./vote/app.py
+
+Here the redis information are semi hard-coded in the code. The voting-app point to the "redis" domain name. Since the redis container
+is linked to the voting-app container, the "redis" domain name will be automatically translated to the redis ip.
+
+```python
+def get_redis():
+    if not hasattr(g, 'redis'):
+        g.redis = Redis(host="redis", db=0, socket_timeout=5)
+ß    return g.redis
+```
+
+</details>
+
+
+
+
+
+
+* Step 11 : shutdown the multi-container application.
 
 ```{r, engine='bash', count_lines}
 $ docker-compose down

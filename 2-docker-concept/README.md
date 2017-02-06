@@ -41,18 +41,7 @@ Status: Downloaded newer image for ubuntu:latest
 Hello world
 ```
 
-As you see, Docker downloaded the image ubuntu because it was not on the local machine.
-
-### Questions:
-
-* Was the ubuntu image on the local machine
- <details>
-<summary><b>Click here to see the solutions</b></summary>
-
-
-* Was the ubuntu image on the local machine ?
-If you haven't use Docker before the ubuntu image should not be on the local machine, hence docker will pull out the image from the docker repository and save a copy locally. The next time you want to create a container from the Ubuntu image, Docker will use the local copy. 
-</details>
+As you see, Docker downloaded the image ubuntu because it was not on the local machine. 
 
 
 * Step 2 : Let’s run the command docker images again:
@@ -137,6 +126,8 @@ ac231579e57f ubuntu "/bin/sh -c 'while tr"   1 minute ago   Up 11 minute        
 ac231579e57f is the shortened container ID (it can be different in your case).
 ```
 
+As you can see the container is still running.
+
 * Step 3 Let’s use this short container ID to show the container standard output:
 
 ```{r, engine='bash', count_lines}
@@ -145,10 +136,10 @@ hello world
 hello world
 hello world
 ...
-``
+```
 As we see, in the docker ps command output, the auto generated container name is evil_golick (your container can have a different name).
 
-Step 4 Use your container name to to show the container standard output:
+* Step 4 Use your container name to to show the container standard output:
 
 ```{r, engine='bash', count_lines}
 $ docker logs <name>
@@ -173,6 +164,11 @@ CONTAINER ID IMAGE       COMMAND  CREATED        STATUS                     PORT
 
 ## 2.7. Expose containers ports
 
+
+A container may expose some ports, this way other services can reach the container. 
+The port exposition is declared in the container specification. ( we will see how to expose a port later)
+
+
 * Step 1 Let’s run a simple web application. We will use the existing image training/webapp, which contains a Python Flask application:
 
 ```{r, engine='bash', count_lines}
@@ -180,8 +176,9 @@ $ docker run -d -P training/webapp python app.py
 ...
 Status: Downloaded newer image for training/webapp:latest
 6e88f42d3d853762edcbfe1fe73fdc5c48865275bc6df759b83b0939d5bd2456
-In the command above we specified the main process (python app.py), the -d command line argument, which tells Docker to run the container in the background. The -P command line argument tells Docker to map any required network ports inside our container to our host. This allows us to access the web application in the container.
 ```
+In the command above we specified the main process (python app.py), the -d command line argument, which tells Docker to run the container in the background. The -P command line argument tells Docker to map any required network ports inside our container to our host. This allows us to access the web application in the container.
+
 
 * Step 2 Use the docker ps command to list running containers:
 
@@ -189,8 +186,13 @@ In the command above we specified the main process (python app.py), the -d comma
 $ docker ps
 CONTAINER ID IMAGE           COMMAND         CREATED       STATUS       PORTS                   NAMES
 6e88f42d3d85 training/webapp "python app.py" 3 minutes ago Up 3 minutes 0.0.0.0:32768->5000/tcp determined_torvalds
-The PORTS column contains the mapped ports. In our case, Docker has exposed port 5000 (the default Python Flask port) on port 32768 (can be different in your case).
 ```
+The PORTS column contains the mapped ports. By default the training/webapp container has the port 5000 open (the default Python Flask port). 
+In our case, Docker has exposed port 5000 on port 32768 (can be different in your case).
+
+Hence if you want to reach the application running inside the container, you will have to send a request on port 32768 instead of 5000.
+
+By doing this, we can run several instance of the same container on the same host.
 
 * Step 3 The docker port command shows the exposed port. We will use the container name (determined_torvalds in the example above, it can be different in your case):
 
@@ -226,7 +228,7 @@ $ docker ps
 CONTAINER ID IMAGE           COMMAND         CREATED       STATUS       PORTS                NAMES
 249476631f7d training/webapp "python app.py" 1 minute  ago Up 1 minute  0.0.0.0:80->5000/tcp webapp
 
-$ curl http://localhost/
+$ curl http://localhost:80/
 Hello world!
 ```
 
@@ -275,6 +277,8 @@ USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.2  0.0  52320 17384 ?        Ss   00:11   0:00 python app.py
 root        26  0.0  0.0  15572  2104 ?        Rs   00:12   0:00 ps aux
 ```
+This will run the command "ps aux" inside the container.
+
 The same command with the -it command line argument can be used to run an interactive session in the container:
 
 ```{r, engine='bash', count_lines}
@@ -350,6 +354,12 @@ $ docker rm -f webapp
 
 ## 2.13. Use a Data Volume
 
+
+Container are stateless resource, a failure of the host will result in the loss of the container and the loss of all the data inside the container.
+
+A “data volume” is a marked directory inside of a container that exists to hold persistent or commonly shared data. 
+Assigning these volumes is done when creating a new container. Any data already present as part of the Docker image in a targeted volume directory is carried forward into the new container and not lost.
+
 * Step 1 Add a data volume to a container:
 
 ```{r, engine='bash', count_lines}
@@ -357,7 +367,8 @@ $ docker run -d -P --name webapp -v /webapp training/webapp python app.py
 ```
 This command started a new container and created a new volume inside the container at /webapp.
 
-TODO: add explaination
+> Here the /webapp folder will actually be mapped to another folder on the hosts. 
+> Each change in this folder will be reflected into the mapped folder on the host.
 
 * Step 2 Locate the volume on the host using the docker inspect command:
 
@@ -378,13 +389,15 @@ $ docker inspect webapp
 ...
 ```
 
+> "Source": "/var/lib/docker/volumes/7d72348e8f.../_data" is the folder mapping "/webapp" in the container.
+
 Alternatively, you can specify a host directory you want to use as a data volume:
 
 ```{r, engine='bash', count_lines}
 $ mkdir db
 $ docker run -d --name db -v $HOME/db:/db training/postgres
 ```
-TODO: Add explaination src_dir:dst_dir
+
 
 * Step 3 Start an interactive session in the db container and create a new file in the /db directory:
 
@@ -418,9 +431,14 @@ root@47a60c01590e:/# ls /db
 hello_from_db_container
 root@47a60c01590e:/# exit
 ```
+
 ## 2.14. Use a Data Volume Container
+
+ 
+
 * Step 1 Let’s create a new named container with a volume to share:
 
+TODO: fix that ( deprecated method )
 ```{r, engine='bash', count_lines}
 $ docker create -v /dbdata --name dbstore training/postgres /bin/true
 ```
@@ -432,24 +450,22 @@ This container does not run an application and reuses the training/postgres imag
 $ docker run -d --volumes-from dbstore --name db1 training/postgres
 $ docker run -d --volumes-from dbstore --name db2 training/postgres
 ```
-TODO:
+
+Now you can see that the folder mounted in the container dbstore is also mounted into db1 and db2
 
 ```
-helos-MBP:~ Thelo$ docker run -d --volumes-from dbstore --name db1 training/postgres
-8eccc3531c0af12b8c2948ad48711b71f4c8845417a83423976306b0ef921028
-Thelos-MBP:~ Thelo$ docker run -d --volumes-from dbstore --name db2 training/postgres
-6066746c4da989672fc560ee6f1c711e738f922cd658bd166ea76b0a6d25db45
 Thelos-MBP:~ Thelo$ docker exec -it db1 bash
 root@8eccc3531c0a:/# ls /
 bin   dbdata  etc   lib    media  opt    root  sbin  sys  usr
 boot  dev     home  lib64  mnt      proc    run   srv   tmp  var
 root@8eccc3531c0a:/# mount | grep dbdata
 /dev/sda2 on /dbdata type ext4 (rw,relatime,data=ordered)
-root@8eccc3531c0a:/# cd dbdata/
-root@8eccc3531c0a:/dbdata#
 ```
 
 ## 2.15. Link containers
+
+Linking container is crucial to allow containers to communicate with each other. 
+
 * Step 1 You should have the db and webapp containers running. Remove the webapp container:
 
 ```{r, engine='bash', count_lines}
