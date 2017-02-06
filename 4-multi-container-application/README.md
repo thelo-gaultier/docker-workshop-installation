@@ -127,7 +127,7 @@ is linked to the voting-app container, the "redis" domain name will be automatic
 def get_redis():
     if not hasattr(g, 'redis'):
         g.redis = Redis(host="redis", db=0, socket_timeout=5)
-git s    return g.redis
+    return g.redis
 ```
 
 </details>
