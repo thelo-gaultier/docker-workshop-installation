@@ -27,7 +27,7 @@ flask-app/
 
 * Step 3 Create a new file app.py with the following content:
 
-```{r, engine='bash', count_lines}
+``` python
 from flask import Flask, render_template
 import random
 
