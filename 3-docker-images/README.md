@@ -69,7 +69,7 @@ Flask==0.10.1
 
 * Step 5 Create a new directory templates and create a new file index.html in this directory with the following content:
 
-```{r, engine='bash', count_lines}
+``` html
 <html>
   <head>
     <style type="text/css">
