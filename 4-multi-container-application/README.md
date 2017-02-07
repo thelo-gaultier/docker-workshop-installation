@@ -1,4 +1,4 @@
-## 3.2. Build a multi-container application
+## 3.1. Build a multi-container application
 In this section, will guide you through the process of building a multi-container application. The application code is available at GitHub:
 https://github.com/docker/example-voting-app
 * Step 1 : Clone the existing application from GitHub:
@@ -93,7 +93,7 @@ fd0740ee1525 redis:alpine            "docker-entrypoint.sh" 2 minutes ago Up 2 m
 1. To vote check the voting-app web page : http://<Host IP>:80
 2. To see the result, check the result-app webb page : http://<Host IP:5001
 
-* Step 10 : Explore the docker-compose file
+* Step 10 : Explore the docker-compose.yml file
 
 #### Take a look at the docker-compose file and try to answer the following questions:
 
@@ -162,12 +162,6 @@ CMD dotnet Worker.dll
 
 
 
-
-
-
-
-
-
 * Step 11 : shutdown the multi-container application.
 
 ```{r, engine='bash', count_lines}
@@ -185,9 +179,21 @@ Removing examplevotingapp_vote_1 ... done
 Removing network examplevotingapp_default
 ```
 
+
+## 3.2 Play with the Docker hub.
+
+Do not hesitate to check and try those projects:
+
+* Host your own Wordpress server within second : [Wordpress](https://docs.docker.com/compose/wordpress/)
+
+* Get yourself a continuous integration server : [Jenkins](https://docs.docker.com/compose/wordpress/)
+
+* Explore the hub : [Docker hub](https://hub.docker.com/explore/)
+
 #Checkpoint
 Write Dockerfile
 Build an image
 Install Docker Compose
 Write docker-compose.yml file
 Use Docker Compose to build and run a multi-container application
+
