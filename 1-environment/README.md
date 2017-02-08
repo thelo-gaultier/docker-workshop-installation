@@ -38,5 +38,4 @@ For more examples and ideas, visit:
 
 ```
 
-Now let's get some hands on what Docker can actually do, [Part 2 : Docker concept](../2-docker-concept/).
-
+Now let's wait patiently until the workshop day.
