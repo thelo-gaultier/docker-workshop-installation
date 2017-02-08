@@ -1,5 +1,5 @@
 
-## 2.16. Connect a container to a network
+## 5.1. Connect a container to a network
 
 This section is optional, you can complete the rest of the workshop first then come back to this part.
 

@@ -477,7 +477,6 @@ $ docker rm -f webapp
 ```{r, engine='bash', count_lines}
 $ docker run -d -P --name webapp --link db:db training/webapp python app.py
 ```
-TODO: explain -P option plus where everything comes from...
 
 * Step 3 Inspect your linked containers with docker inspect:
 
@@ -485,9 +484,49 @@ TODO: explain -P option plus where everything comes from...
 $ docker inspect -f "{{ .HostConfig.Links }}" webapp
 [/db:/webapp/db]
 ```
+
+> The db container is now linked to the webapp container. As a result the webapp does not need to know
+> the db container's ip to communicate with it, but can use the container name instead.
+
 You see that the webapp container is now linked to the db container. This allows it to access information about the db container.
 
-* Step 4 Start an interactive session in the webapp container and check its /etc/hosts file and its environment variables:
+* Step 4 Start an interactive session in the webapp container and check the following:
+
+Verify that the db container is reachable using the container name.
+
+```{r, engine='bash', count_lines}
+root@90eb1de6fa8a:/opt/webapp# docker exec -it webapp bash
+root@90eb1de6fa8a:/opt/webapp# ping db -c 2
+PING db (172.17.0.2) 56(84) bytes of data.
+64 bytes from db (172.17.0.2): icmp_seq=1 ttl=64 time=0.123 ms
+64 bytes from db (172.17.0.2): icmp_seq=2 ttl=64 time=0.105 ms
+--- db ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1024ms
+rtt min/avg/max/mdev = 0.105/0.114/0.123/0.009 ms
+```
+
+If you want to know how docker did this, it just added a record in the /etc/hosts file in your container.
+This record will automatically do the mapping between a domain name and an ip. If your friends are running on
+an linux based OS, do not hesitate to mess up this file to make them go crazy, pointing google to another website for example
+( after this tutorial, at home ;) ).
+
+```{r, engine='bash', count_lines}
+root@90eb1de6fa8a:/opt/webapp# cat /etc/hosts
+127.0.0.1	localhost
+::1	localhost ip6-localhost ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+172.17.0.2	db 6ddd19435697
+172.17.0.3	419eeb029a25
+```
+
+Although this option is deprecated, you might found on the internet some old tutorials leveraging it.
+But keep it mind that it can disappear at anytime so do not use it!!
+
+A long long time ago, Docker decided that when you link a container A ( here webapp ) to another B ( here db). It would be great if
+webapp can access all the environment variable of db.  
 
 ```{r, engine='bash', count_lines}
 $ docker exec -it webapp bash
@@ -506,7 +545,13 @@ root@90eb1de6fa8a:/opt/webapp# cat /etc/hosts
 root@90eb1de6fa8a:/opt/webapp# exit
 ```
 
-You see that Docker updated the /etc/hosts file and set the environment variables. This information can be used in the webapp container to access the database.
+
+* Step 5 : Delete all the containers still alive
+
+```{r, engine='bash', count_lines}
+$ docker rm -b webapp db db1 db2 dbstore
+```
+
 
 Now that we know the basic commands, let's build our own image, [Part 3 : Build your own Docker image](../3-docker-images/).
 
