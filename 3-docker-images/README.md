@@ -7,7 +7,7 @@ In this section we will create a simple web application from scratch. We will us
 
 In the next session we will create all necessary files for our application. The code for this application is also available in this directory.
 
-## 3.1.1. Create project files
+## 3.1 Create project files
 
 * Step 1 Create a new directory flask-app for our project:
 
@@ -127,7 +127,7 @@ CMD ["python", "/usr/src/app/app.py"]
 ```
 > Here we start from an existing image ( alpine:3.5) then add some extra steps because we need it for our application.
 
-## 3.1.2. Build a Docker image
+## 3.2 Build a Docker image
 * Step 1 Now we can build our Docker image. In the command below, replace <user-name> with your user name. For a real image, the user name should be the same as you created when you registered on Docker Hub. Because we will not publish our image, you can use any valid name:
 
 ```{r, engine='bash', count_lines}
